@@ -1,0 +1,37 @@
+[
+  {
+    "id": "a3f2c3bc-22e9-4f35-9c10-f5e6d2c3b927",
+    "caseNumber": "2025/EWHC/123",
+    "title": "Smith v Acme Ltd",
+    "description": "Claim for unfair dismissal brought before the Employment Tribunal.",
+    "createdDate": "2025-03-15T10:45:00"
+  },
+  {
+    "id": "e5c183ab-41cd-4b8e-a76b-bd17b9a77661",
+    "caseNumber": "2025/Crown/456",
+    "title": "R v Johnson",
+    "description": "Crown Court prosecution for alleged fraud under the Fraud Act 2006.",
+    "createdDate": "2025-01-30T14:20:00"
+  },
+  {
+    "id": "f7d214b0-fb49-4ea1-8296-d59c1e318118",
+    "caseNumber": "2025/Fam/289",
+    "title": "Garcia v Garcia",
+    "description": "Family Court case regarding a child arrangements order.",
+    "createdDate": "2025-02-20T09:00:00"
+  },
+  {
+    "id": "c1a5f5f8-779d-4b9e-8d3d-65461e83c4db",
+    "caseNumber": "2025/Mags/672",
+    "title": "R v Anderson",
+    "description": "Magistrates' Court case for driving without due care and attention.",
+    "createdDate": "2025-04-05T11:10:00"
+  },
+  {
+    "id": "89e28d23-9647-4d57-8e38-64fd17e97a89",
+    "caseNumber": "2025/Prob/314",
+    "title": "In the Estate of Margaret Lee (Deceased)",
+    "description": "Probate matter concerning grant of representation and will validity.",
+    "createdDate": "2025-05-01T08:30:00"
+  }
+]
