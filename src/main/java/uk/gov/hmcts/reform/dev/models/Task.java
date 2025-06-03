@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.dev.models;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +10,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Task DTO completing requirements set out at for the requirements laid out (<a href="https://github.com/hmcts/dts-developer-challenge?tab=readme-ov-file">https://github.com/hmcts/dts-developer-challenge?tab=readme-ov-file</a>)
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -20,11 +21,22 @@ import java.util.UUID;
 @Table(
     name = "tasks"
 )
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    public Task(String title, String description, String status, LocalDateTime dueDate, Case parentCase){
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.dueDate = dueDate;
+        this.parentCase = parentCase;
+    }
 
     private String title;
     private String description;
@@ -36,6 +48,7 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.EAGER,  optional = false,  cascade = CascadeType.DETACH)
     @JsonProperty("case")
+    @JsonIdentityReference(alwaysAsId=true)
     private Case parentCase;
 
 }

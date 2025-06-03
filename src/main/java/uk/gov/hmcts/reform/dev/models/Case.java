@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.dev.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -12,18 +15,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 
 /**
  * Fundamental Case entity, represents all required data to perform as a DTO
- * for the requirements laid out (<a href="https://github.com/hmcts/dts-developer-challenge?tab=readme-ov-file">https://github.com/hmcts/dts-developer-challenge?tab=readme-ov-file</a>)
  * <p>
  * Potential improvements:
  *  - Making status a lookup to another table, allowing an extendable choice from a list, some basic statuses with the
  *  option to add additional
- *
  */
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +40,9 @@ import java.util.UUID;
         @UniqueConstraint(name = "UniqueCaseNumber", columnNames = {"caseNumber"})
     }
 )
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id")
 public class Case {
 
     // Preferable for a distributed/parallel system, consistent format e.g. in url params
@@ -64,5 +69,12 @@ public class Case {
     private LocalDateTime createdDate;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Task> tasks;
+    @JsonIdentityReference(alwaysAsId=true)
+    private List<Task> tasks = new ArrayList<>();
+
+    public void addTask(Task task){
+        this.tasks.add(task);
+    }
+
+
 }

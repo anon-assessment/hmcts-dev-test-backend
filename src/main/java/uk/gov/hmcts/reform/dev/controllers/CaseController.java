@@ -10,11 +10,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.reform.dev.models.Case;
+import uk.gov.hmcts.reform.dev.models.Task;
 import uk.gov.hmcts.reform.dev.repositories.CaseRepository;
+import uk.gov.hmcts.reform.dev.repositories.TaskRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.springframework.http.ResponseEntity.*;
@@ -33,9 +36,14 @@ public class CaseController {
      */
     @EventListener
     public void onApplicationReady(ApplicationReadyEvent event) {
-        for(int i = 0; i < 100; i++){
-            caseRepository.save(new Case("ABC12345-"+i, "Case Title",
-                                         "Case Description", "Case Status", LocalDateTime.now()));
+        for(int i = 0; i < 25; i++){
+            Case c = new Case("ABC12345-"+i, "Case Title",
+                              "Case Description", "Case Status", LocalDateTime.now());
+            for(int j = 0; j < new Random().nextInt(5); j++){
+                c.addTask(new Task("Task Title-"+i+"-"+j, "Task Description", "Task Status",
+                                             LocalDateTime.now(), c));
+            }
+            caseRepository.save(c);
         }
     }
 
