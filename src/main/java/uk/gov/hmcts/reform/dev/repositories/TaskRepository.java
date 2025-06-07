@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface TaskRepository extends CrudRepository<Task, UUID> {
 
-    List<Task> findAllByParentCaseId(UUID id);
+    Page<Task> findAllByParentCaseId(UUID id, Pageable pageable);
 
     Page<Task> searchByIdOrTitleContainingIgnoreCase(UUID id, String title, Pageable pageable);
 

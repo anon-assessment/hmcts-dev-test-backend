@@ -1,18 +1,18 @@
 package uk.gov.hmcts.reform.dev.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.gov.hmcts.reform.dev.dto.CaseDto;
 import uk.gov.hmcts.reform.dev.models.Case;
 import uk.gov.hmcts.reform.dev.models.Task;
 import uk.gov.hmcts.reform.dev.repositories.CaseRepository;
-import uk.gov.hmcts.reform.dev.repositories.TaskRepository;
+import uk.gov.hmcts.reform.dev.services.DAOService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,33 +27,16 @@ public class CaseController {
 
     CaseRepository caseRepository;
 
-    /**
-     * Event listener for app startup generating example cases for frontend testing
-     * <br>
-     * TODO: Remove/adapt as unit testing only data
-     *
-     * @param event Unused startup event
-     */
-    @EventListener
-    public void onApplicationReady(ApplicationReadyEvent event) {
-        for(int i = 0; i < 25; i++){
-            Case c = new Case("ABC12345-"+i, "Case Title",
-                              "Case Description", "Case Status", LocalDateTime.now());
-            for(int j = 0; j < new Random().nextInt(5); j++){
-                c.addTask(new Task("Task Title-"+i+"-"+j, "Task Description", "Task Status",
-                                             LocalDateTime.now(), c));
-            }
-            caseRepository.save(c);
-        }
-    }
+    private final DAOService daoService;
 
     /**
      * Controller constructor, autowires case repository for managing cases
      *
      * @param caseRepository Autowired CrudRepository for cases
      */
-    public CaseController(@Autowired CaseRepository caseRepository) {
+    public CaseController(@Autowired CaseRepository caseRepository, @Autowired DAOService daoService) {
         this.caseRepository = caseRepository;
+        this.daoService = daoService;
     }
 
     /**
@@ -75,9 +58,12 @@ public class CaseController {
      * @return HTTP Ok with new case DTO
      */
     @PostMapping(value = "/case", produces = "application/json")
-    public ResponseEntity<Case> createCase(@RequestBody Case caseDetails) {
-        caseRepository.save(caseDetails);
-        return ok(caseDetails);
+    public ResponseEntity<?> createCase(@RequestBody CaseDto caseDetails) {
+        if(caseDetails.getCreatedDate() == null){
+            caseDetails.setCreatedDate(LocalDateTime.now());
+        }
+
+        return ok(daoService.saveCase(caseDetails));
     }
 
     /**
@@ -87,8 +73,8 @@ public class CaseController {
      * @return HTTP Ok with case requested, else HTTP Not Found if case doesn't exist
      */
     @GetMapping(value = "/case/{id}", produces = "application/json")
-    public ResponseEntity<Case> getCase(@PathVariable UUID id) {
-        Optional<Case> optionalCase = caseRepository.findById(id);
+    public ResponseEntity<?> getCase(@PathVariable UUID id) {
+        Optional<CaseDto> optionalCase = daoService.getCase(id);
         return optionalCase.map(ResponseEntity::ok).orElseGet(() -> notFound().build());
     }
 
@@ -99,13 +85,9 @@ public class CaseController {
      * @return HTTP Ok with boolean true (case existed, now deleted) or false (case did not exist)
      */
     @DeleteMapping(value = "/case", produces = "application/json")
-    public ResponseEntity<Boolean> deleteCase(@RequestParam UUID id) {
-        if (caseRepository.existsById(id)) {
-            caseRepository.deleteById(id);
-        }else{
-            return ok(false);
-        }
-        return ok(true);
+    public ResponseEntity<?> deleteCase(@RequestParam UUID id) {
+        daoService.deleteCase(id);
+        return ok().build();
     }
 
     /**
@@ -115,18 +97,19 @@ public class CaseController {
      * @return HTTP Ok with list of created cases (now with internal ids)
      */
     @PostMapping(value = "/case/list", produces = "application/json")
-    public ResponseEntity<List<Case>> getCaseList(@RequestBody List<Case> cases) {
-        caseRepository.saveAll(cases);
-        return ok(cases);
+    public ResponseEntity<?> getCaseList(@RequestBody List<CaseDto> cases) {
+        return ok(daoService.saveCases(cases));
     }
 
     /**
      * Endpoint to fetch all cases
      *
      * @return HTTP Ok List of cases that currently exist in the database
+     * @deprecated Removing due to no reasonable, scalable use for such functionality
      */
     @GetMapping(value = "/case/list", produces = "application/json")
-    public ResponseEntity<Iterable<Case>> getAllCases() {
+    @Deprecated(forRemoval = true)
+    public ResponseEntity<?> getAllCases() {
         return ok(caseRepository.findAll());
     }
 
@@ -140,13 +123,10 @@ public class CaseController {
      * @return HTTP Ok with updated case DTO, HTTP Not Found if case doesn't exist with id
      */
     @PostMapping(value = "/case/{id}/status", produces = "application/json")
-    public ResponseEntity<Case> updateCaseStatus(@PathVariable UUID id, @RequestParam String status) {
-        Optional<Case> caseOptional = caseRepository.findById(id);
-        if (caseOptional.isPresent()) {
-            caseOptional.get().setStatus(status);
-            caseRepository.save(caseOptional.get());
-            return ok(caseOptional.get());
-        }else{
+    public ResponseEntity<?> updateCaseStatus(@PathVariable UUID id, @RequestParam String status) {
+        try {
+            return ok(daoService.updateCaseStatus(id, status));
+        }catch (IllegalArgumentException e){
             return notFound().build();
         }
     }
@@ -166,25 +146,14 @@ public class CaseController {
     @PostMapping(value = "/case/search")
     public ResponseEntity<?> searchCase(@RequestParam String searchString,
                                                  @RequestParam Integer pageNumber,
-                                                 @RequestParam Integer pageSize) {
+                                                 @RequestParam Integer pageSize) throws JsonProcessingException {
         if(pageSize < 1){
             return badRequest().body("Page size must be at least 1");
         }else if(pageNumber < 0){
             return badRequest().body("Page number must be greater than 0");
         }
-        UUID id = null;
-        try {
-            id = UUID.fromString(searchString);
-        }catch(IllegalArgumentException ignored){
-        }
-
         return ok(
-            caseRepository.searchByIdOrTitleContainingIgnoreCaseOrCaseNumberContainingIgnoreCase(
-                id,
-                searchString,
-                searchString,
-                PageRequest.of(pageNumber, pageSize, Sort.by("title"))
-            )
+            daoService.searchCases(searchString, PageRequest.of(pageNumber, pageSize, Sort.by("title")))
         );
     }
 

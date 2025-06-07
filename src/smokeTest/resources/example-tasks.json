@@ -1,0 +1,202 @@
+{
+  "2025/EWHC/123": [
+    {
+      "title": "Prepare witness statement",
+      "description": "Draft and finalize witness statement for trial.",
+      "status": "In Progress",
+      "dueDate": "2025-03-25T17:00:00"
+    },
+    {
+      "title": "File response to claim",
+      "description": "Submit formal response to claimant's allegations.",
+      "status": "Pending",
+      "dueDate": "2025-03-20T12:00:00"
+    }
+  ],
+  "2025/Crown/456": [
+    {
+      "title": "Gather forensic evidence",
+      "description": "Collect and analyze forensic reports for prosecution.",
+      "status": "Completed",
+      "dueDate": "2025-01-28T09:00:00"
+    },
+    {
+      "title": "Interview key witnesses",
+      "description": "Schedule and conduct interviews with key prosecution witnesses.",
+      "status": "In Progress",
+      "dueDate": "2025-01-29T15:00:00"
+    }
+  ],
+  "2025/Fam/289": [
+    {
+      "title": "Child welfare report",
+      "description": "Obtain and review child welfare report from social services.",
+      "status": "Pending",
+      "dueDate": "2025-02-22T10:00:00"
+    }
+  ],
+  "2025/Mags/672": [],
+  "2025/Prob/314": [
+    {
+      "title": "Verify will authenticity",
+      "description": "Confirm the validity of the deceased’s last will and testament.",
+      "status": "In Progress",
+      "dueDate": "2025-05-05T16:00:00"
+    }
+  ],
+  "2025/Ch/790": [
+    {
+      "title": "Draft damages claim",
+      "description": "Prepare detailed claim for damages resulting from breach of contract.",
+      "status": "Pending",
+      "dueDate": "2025-05-15T13:00:00"
+    },
+    {
+      "title": "File injunction motion",
+      "description": "Submit application for interim injunction to court.",
+      "status": "Pending",
+      "dueDate": "2025-05-12T09:00:00"
+    }
+  ],
+  "2025/Comm/223": [
+    {
+      "title": "Review supply contract",
+      "description": "Analyze disputed terms within supply agreement.",
+      "status": "Completed",
+      "dueDate": "2025-04-15T11:00:00"
+    }
+  ],
+  "2025/Tax/112": [
+    {
+      "title": "Prepare appeal documents",
+      "description": "Compile and submit documents for tax appeal.",
+      "status": "In Progress",
+      "dueDate": "2025-04-01T10:00:00"
+    },
+    {
+      "title": "Client consultation",
+      "description": "Discuss appeal strategy with client.",
+      "status": "Pending",
+      "dueDate": "2025-03-30T14:00:00"
+    }
+  ],
+  "2025/Admin/305": [
+    {
+      "title": "Draft judicial review application",
+      "description": "Prepare paperwork for filing judicial review.",
+      "status": "In Progress",
+      "dueDate": "2025-02-25T16:30:00"
+    }
+  ],
+  "2025/Land/409": [],
+  "2025/Crim/875": [
+    {
+      "title": "Review evidence disclosure",
+      "description": "Examine prosecution evidence and prepare defense notes.",
+      "status": "Pending",
+      "dueDate": "2025-05-01T12:00:00"
+    },
+    {
+      "title": "Client meeting",
+      "description": "Discuss case strategy with defendant.",
+      "status": "Completed",
+      "dueDate": "2025-04-28T09:30:00"
+    }
+  ],
+  "2025/Family/540": [
+    {
+      "title": "Financial documents review",
+      "description": "Assess financial statements for settlement negotiations.",
+      "status": "In Progress",
+      "dueDate": "2025-05-02T10:00:00"
+    }
+  ],
+  "2025/Mags/912": [],
+  "2025/Ch/845": [
+    {
+      "title": "Prepare injunction affidavit",
+      "description": "Draft affidavit supporting injunction request.",
+      "status": "Pending",
+      "dueDate": "2025-04-20T14:00:00"
+    }
+  ],
+  "2025/Comm/635": [
+    {
+      "title": "IP evidence collection",
+      "description": "Gather evidence related to intellectual property claim.",
+      "status": "In Progress",
+      "dueDate": "2025-03-20T12:00:00"
+    },
+    {
+      "title": "Draft statement of case",
+      "description": "Prepare initial statement of case for filing.",
+      "status": "Pending",
+      "dueDate": "2025-03-25T16:00:00"
+    }
+  ],
+  "2025/Prob/788": [],
+  "2025/Admin/501": [
+    {
+      "title": "Legal research",
+      "description": "Research relevant case law on school admissions policies.",
+      "status": "Completed",
+      "dueDate": "2025-02-15T13:00:00"
+    }
+  ],
+  "2025/Land/684": [
+    {
+      "title": "Survey property boundaries",
+      "description": "Commission surveyor to verify lease boundaries.",
+      "status": "Pending",
+      "dueDate": "2025-04-10T11:00:00"
+    }
+  ],
+  "2025/EWHC/953": [
+    {
+      "title": "Prepare fiduciary duty brief",
+      "description": "Summarize case facts and legal issues regarding fiduciary duty.",
+      "status": "In Progress",
+      "dueDate": "2025-04-05T15:00:00"
+    }
+  ],
+  "2025/Tax/711": [],
+  "2025/Crim/849": [
+    {
+      "title": "Witness preparation",
+      "description": "Coach witnesses for upcoming trial testimony.",
+      "status": "Pending",
+      "dueDate": "2025-05-01T14:30:00"
+    }
+  ],
+  "2025/Family/674": [
+    {
+      "title": "Prepare financial affidavit",
+      "description": "Compile financial information for court submission.",
+      "status": "Completed",
+      "dueDate": "2025-04-10T10:30:00"
+    }
+  ],
+  "2025/Mags/789": [],
+  "2025/Ch/830": [
+    {
+      "title": "Draft trust allocation report",
+      "description": "Prepare report detailing beneficiary shares for trustee review.",
+      "status": "Pending",
+      "dueDate": "2025-05-10T13:00:00"
+    }
+  ],
+  "2025/Comm/555": [
+    {
+      "title": "Prepare damages calculation",
+      "description": "Calculate financial impact of delivery delays.",
+      "status": "In Progress",
+      "dueDate": "2025-04-15T12:30:00"
+    },
+    {
+      "title": "Client strategy meeting",
+      "description": "Discuss next steps and settlement options with client.",
+      "status": "Pending",
+      "dueDate": "2025-04-12T09:00:00"
+    }
+  ]
+}

@@ -21,9 +21,6 @@ import java.util.UUID;
 @Table(
     name = "tasks"
 )
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class,
-    property = "id")
 public class Task {
 
     @Id
@@ -42,13 +39,10 @@ public class Task {
     private String description;
     private String status;
 
-    // Using ISO-8601 both on serialization and deserialization
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
+
     private LocalDateTime dueDate;
 
-    @ManyToOne(fetch = FetchType.EAGER,  optional = false,  cascade = CascadeType.DETACH)
-    @JsonProperty("case")
-    @JsonIdentityReference(alwaysAsId=true)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.DETACH)
     private Case parentCase;
 
 }

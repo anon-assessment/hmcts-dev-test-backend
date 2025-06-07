@@ -40,9 +40,6 @@ import java.util.UUID;
         @UniqueConstraint(name = "UniqueCaseNumber", columnNames = {"caseNumber"})
     }
 )
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class,
-    property = "id")
 public class Case {
 
     // Preferable for a distributed/parallel system, consistent format e.g. in url params
@@ -64,12 +61,9 @@ public class Case {
     private String description;
     private String status;
 
-    // Using ISO-8601 both on serialization and deserialization
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
     private LocalDateTime createdDate;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JsonIdentityReference(alwaysAsId=true)
     private List<Task> tasks = new ArrayList<>();
 
     public void addTask(Task task){
