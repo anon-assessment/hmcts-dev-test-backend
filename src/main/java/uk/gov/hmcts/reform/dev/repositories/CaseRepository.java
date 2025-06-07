@@ -1,12 +1,10 @@
 package uk.gov.hmcts.reform.dev.repositories;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import uk.gov.hmcts.reform.dev.models.Case;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

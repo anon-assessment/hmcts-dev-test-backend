@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.dev.models;
 
-import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
