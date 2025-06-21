@@ -33,7 +33,7 @@ class StandardSmokeTest {
     private String testUrl;
     ObjectMapper objectMapper = JsonMapper.builder()
         .findAndAddModules()
-        .build();;
+        .build();
 
     private final ClassPathResource exampleCases;
     private final ClassPathResource exampleTasks;

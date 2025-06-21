@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.dev.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.reform.dev.dto.CaseDto;
@@ -18,6 +20,9 @@ import java.util.UUID;
 
 import static org.springframework.http.ResponseEntity.*;
 
+/**
+ * Routes for CRUD operations on the Case data
+ */
 @RestController()
 public class CaseController {
 
@@ -25,14 +30,16 @@ public class CaseController {
 
     private final DAOService daoService;
 
+    private final PagedResourcesAssembler<CaseDto> assembler;
+
     /**
-     * Controller constructor, autowires case repository for managing cases
-     *
-     * @param caseRepository Autowired CrudRepository for cases
+     * Controller constructor, autowires components for operations
      */
-    public CaseController(@Autowired CaseRepository caseRepository, @Autowired DAOService daoService) {
+    public CaseController(@Autowired CaseRepository caseRepository, @Autowired DAOService daoService,
+                          @Autowired PagedResourcesAssembler<CaseDto> assembler) {
         this.caseRepository = caseRepository;
         this.daoService = daoService;
+        this.assembler = assembler;
     }
 
     /**
@@ -115,13 +122,15 @@ public class CaseController {
      * <i>Note: potential need for validation to avoid null status?</i>
      *
      * @param id UUID of case to update
-     * @param status New status for specified case
+     * @param value New status for specified case
+     * @param property Name of property to update
      * @return HTTP Ok with updated case DTO, HTTP Not Found if case doesn't exist with id
      */
-    @PostMapping(value = "/case/{id}/status", produces = "application/json")
-    public ResponseEntity<?> updateCaseStatus(@PathVariable UUID id, @RequestParam String status) {
+    @PostMapping(value = "/case/{id}/{property}", produces = "application/json")
+    public ResponseEntity<?> updateProperty(@PathVariable UUID id, @PathVariable String property,
+                                            @RequestParam String value) {
         try {
-            return ok(daoService.updateCaseStatus(id, status));
+            return ok(daoService.updateCaseProperty(id, value, property));
         }catch (IllegalArgumentException e){
             return notFound().build();
         }
@@ -135,22 +144,16 @@ public class CaseController {
      *
      * @param searchString The string to search by, if it is a UUID it will automatically be used, otherwise
      *                     results where the title/number contain the value (non-case sensitive).
-     * @param pageNumber Number of the current page TODO: swap to HATEOAS/HAL
-     * @param pageSize Size of pages being returned TODO: swap to HATEOAS/HAL
-     * @return Page containing information about result set and the page content requested or bad request
+     * @param pageable Pageable parameters (pageNumber, pageSize and sort) for traversing page set.
+     * @return PagedModel containing info about page and any results in _embedded
      */
     @PostMapping(value = "/case/search")
     public ResponseEntity<?> searchCase(@RequestParam String searchString,
-                                                 @RequestParam Integer pageNumber,
-                                                 @RequestParam Integer pageSize) throws JsonProcessingException {
-        if(pageSize < 1){
-            return badRequest().body("Page size must be at least 1");
-        }else if(pageNumber < 0){
-            return badRequest().body("Page number must be greater than 0");
-        }
-        return ok(
-            daoService.searchCases(searchString, PageRequest.of(pageNumber, pageSize, Sort.by("title")))
-        );
+                                        Pageable pageable) {
+
+        return ok(assembler.toModel(
+            daoService.searchCases(searchString, pageable)
+        ));
     }
 
 }

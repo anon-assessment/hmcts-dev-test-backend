@@ -20,6 +20,9 @@ import uk.gov.hmcts.reform.dev.repositories.CaseRepository;
 import uk.gov.hmcts.reform.dev.repositories.TaskRepository;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
@@ -33,7 +36,7 @@ public class DAOService {
 
     ObjectMapper objectMapper = JsonMapper.builder()
         .findAndAddModules()
-        .build();;
+        .build();
 
     public DAOService(
         @Autowired CaseRepository caseRepository,
@@ -155,7 +158,7 @@ public class DAOService {
         return taskDtos.stream().map(this::saveTask).toList();
     }
 
-    public Page<CaseDto> searchCases(String searchString, Pageable pageable) throws JsonProcessingException {
+    public Page<CaseDto> searchCases(String searchString, Pageable pageable) {
         UUID id = null;
         try {
             id = UUID.fromString(searchString);
@@ -175,10 +178,24 @@ public class DAOService {
         return taskRepository.findById(id).map(this::convertTask);
     }
 
-    public CaseDto updateCaseStatus(UUID id, String status) throws IllegalArgumentException {
+    public CaseDto updateCaseProperty(UUID id, String value, String property) throws IllegalArgumentException {
         Optional<Case> caseOptional = caseRepository.findById(id);
         if (caseOptional.isPresent()) {
-            caseOptional.get().setStatus(status);
+            try {
+                switch (property) {
+                    case "status" -> caseOptional.get().setStatus(value);
+                    case "description" -> caseOptional.get().setDescription(value);
+                    case "title" -> caseOptional.get().setTitle(value);
+                    case "caseNumber" -> caseOptional.get().setCaseNumber(value);
+                    case "createdDate" -> {
+                        LocalDateTime localDate = LocalDateTime.parse(value);
+                        caseOptional.get().setCreatedDate(localDate);
+                    }
+                    default -> throw new IllegalArgumentException("Cannot find modifiable property '"+property+"'");
+                }
+            }catch(DateTimeParseException e){
+                throw new IllegalArgumentException("Could not parse date '" + value + "'");
+            }
             caseRepository.save(caseOptional.get());
             return convertCase(caseOptional.get());
         }
