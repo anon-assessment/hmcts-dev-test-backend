@@ -15,6 +15,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit test for Task entity
+ */
 @DataJpaTest
 public class TaskTest {
 

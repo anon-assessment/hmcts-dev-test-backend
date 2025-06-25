@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.dev;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
@@ -18,15 +20,13 @@ import uk.gov.hmcts.reform.dev.dto.TaskDto;
 import uk.gov.hmcts.reform.dev.models.Case;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-class StandardSmokeTest {
+class DataIOSmokeTest {
     protected static final String CONTENT_TYPE_VALUE = "application/json";
 
     @Value("${TEST_URL:http://localhost:4000}")
@@ -38,8 +38,8 @@ class StandardSmokeTest {
     private final ClassPathResource exampleCases;
     private final ClassPathResource exampleTasks;
 
-    public StandardSmokeTest(@Value("example-cases.json") ClassPathResource exampleCases,
-        @Value("example-tasks.json") ClassPathResource exampleTasks) {
+    public DataIOSmokeTest(@Value("example-cases.json") ClassPathResource exampleCases,
+                           @Value("example-tasks.json") ClassPathResource exampleTasks) {
         this.exampleCases = exampleCases;
         this.exampleTasks = exampleTasks;
     }
@@ -50,18 +50,29 @@ class StandardSmokeTest {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
+    private List<CaseDto> caseDtos;
+    private Map<String, List<TaskDto>> tasks;
+
     private List<CaseDto> getExampleCases() throws IOException {
+        if(caseDtos != null) {
+            return caseDtos;
+        }
         CollectionType typeReference =
             TypeFactory.defaultInstance().constructCollectionType(List.class, CaseDto.class);
-        return objectMapper.readValue(exampleCases.getURL(), typeReference);
+        caseDtos = objectMapper.readValue(exampleCases.getURL(), typeReference);
+        return caseDtos;
     }
 
     private Map<String, List<TaskDto>> getExampleTasks() throws IOException {
+        if(tasks != null) {
+            return tasks;
+        }
         TypeFactory typeFactory = objectMapper.getTypeFactory();
         MapType typeReference =
             TypeFactory.defaultInstance().constructMapType(Map.class, typeFactory.constructType(String.class),
                                                            typeFactory.constructCollectionType(List.class, TaskDto.class));
-        return objectMapper.readValue(exampleTasks.getURL(), typeReference);
+        tasks = objectMapper.readValue(exampleTasks.getURL(), typeReference);
+        return tasks;
     }
 
     /**
@@ -147,6 +158,9 @@ class StandardSmokeTest {
         }
     }
 
+    /**
+     * Tests search functionality by first calling basicExampleLoad, then searching and validating output
+     */
     @Test
     void exampleLoadSearch(){
 
@@ -155,11 +169,46 @@ class StandardSmokeTest {
         Response response = given()
             .contentType(ContentType.JSON)
             .when()
-            .post("/case/search?searchString=&pageNumber=0&pageSize=10")
+            .post("/case/search?searchString=&page=0&size=10&sort=title,desc")
             .then()
             .extract().response();
 
-        System.out.println(response.body().asString());
+        assertEquals(200, response.statusCode(), "Search failed with code "+response.statusCode());
+
+        TypeFactory typeFactory = objectMapper.getTypeFactory();
+        List<CaseDto> page = new ArrayList<>();
+
+        try{
+            // Get embedded data from page
+            JsonNode node = objectMapper.readTree(response.getBody().asString());
+
+            page = objectMapper.readValue(
+                node.get("_embedded").get("caseDtoes").toString(),
+                typeFactory.constructCollectionType(List.class, CaseDto.class)
+            );
+
+            assertEquals(10, node.get("page").get("size").intValue(), "Page size must be 10");
+            assertEquals(0, node.get("page").get("number").intValue(),  "Page number must be 0");
+            assertEquals(3, node.get("page").get("totalPages").intValue(), "Total pages must be 3");
+            assertEquals(25, node.get("page").get("totalElements").intValue(), "Total elements must be 25");
+
+            assertNotNull(node.get("_links").get("first").get("href").textValue(), "No first link");
+            assertNotNull(node.get("_links").get("last").get("href").textValue(), "No last link");
+            assertNotNull(node.get("_links").get("next").get("href").textValue(), "No next link");
+            assertNotNull(node.get("_links").get("self").get("href").textValue(), "No previous link");
+
+        }catch(JsonProcessingException e){
+            fail("Could not parse list of CaseDtos from response", e);
+        }
+
+        assertEquals(10, page.size(), "Did not receive correct number of Cases");
+
+        Optional<CaseDto> first = caseDtos.stream().max(Comparator.comparing(CaseDto::getTitle));
+        assertTrue(first.isPresent(), "Could not get first item from test data");
+
+        assertEquals(first.get().getCaseNumber(), page.getFirst().getCaseNumber(),
+                     "Incorrect ordering of page");
+
     }
 
 }

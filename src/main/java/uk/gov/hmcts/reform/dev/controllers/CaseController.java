@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.dev.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.reform.dev.dto.CaseDto;
@@ -58,7 +56,7 @@ public class CaseController {
      * Endpoint to create a case in the database
      *
      * @param caseDetails DTO of the case to be created (should not have id)
-     * @return HTTP Ok with new case DTO
+     * @return HTTP Ok with new case DTO or HTTP Bad Request if case invalid
      */
     @PostMapping(value = "/case", produces = "application/json")
     public ResponseEntity<?> createCase(@RequestBody CaseDto caseDetails) {
@@ -66,7 +64,11 @@ public class CaseController {
             caseDetails.setCreatedDate(LocalDateTime.now());
         }
 
-        return ok(daoService.saveCase(caseDetails));
+        try {
+            return ok(daoService.saveCase(caseDetails));
+        }catch(IllegalArgumentException e){
+            return badRequest().body(e.getMessage());
+        }
     }
 
     /**
@@ -117,14 +119,13 @@ public class CaseController {
     }
 
     /**
-     * Endpoint to update individual case status by id
+     * Endpoint to update individual case property by id
      * <br>
-     * <i>Note: potential need for validation to avoid null status?</i>
      *
      * @param id UUID of case to update
-     * @param value New status for specified case
+     * @param value New value for specified case property
      * @param property Name of property to update
-     * @return HTTP Ok with updated case DTO, HTTP Not Found if case doesn't exist with id
+     * @return HTTP Ok with updated case DTO, HTTP Bad Request if case doesn't exist with id or could not update
      */
     @PostMapping(value = "/case/{id}/{property}", produces = "application/json")
     public ResponseEntity<?> updateProperty(@PathVariable UUID id, @PathVariable String property,
@@ -132,7 +133,7 @@ public class CaseController {
         try {
             return ok(daoService.updateCaseProperty(id, value, property));
         }catch (IllegalArgumentException e){
-            return notFound().build();
+            return new ResponseEntity<>("Could not update: "+e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

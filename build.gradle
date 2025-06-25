@@ -56,6 +56,10 @@ configurations {
 
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
+  mockitoAgent {
+    transitive = false
+  }
 }
 
 tasks.withType(JavaCompile) {
@@ -79,14 +83,14 @@ test {
   failFast = true
 }
 
-task functional(type: Test) {
+tasks.register('functional', Test) {
   description = "Runs functional tests"
   group = "Verification"
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
   classpath = sourceSets.functionalTest.runtimeClasspath
 }
 
-task integration(type: Test) {
+tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
@@ -94,7 +98,7 @@ task integration(type: Test) {
   failFast = true
 }
 
-task smoke(type: Test) {
+tasks.register('smoke', Test) {
   description = "Runs Smoke Tests"
   testClassesDirs = sourceSets.smokeTest.output.classesDirs
   classpath = sourceSets.smokeTest.runtimeClasspath
@@ -147,6 +151,7 @@ ext {
   logbackVersion = "1.5.18"
 }
 
+
 ext['snakeyaml.version'] = '2.2'
 
 dependencies {
@@ -182,6 +187,8 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+
+  mockitoAgent "org.mockito:mockito-core"
 }
 
 mainClassName = 'uk.gov.hmcts.reform.dev.Application'

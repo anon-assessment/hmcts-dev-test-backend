@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -100,13 +101,13 @@ public class DAOService {
         );
     }
 
-    private Task convertTaskDto(TaskDto taskDto) throws IllegalStateException{
+    private Task convertTaskDto(TaskDto taskDto) throws IllegalArgumentException, NoSuchElementException {
         if(taskDto.getParentCase() == null){
-            throw new  IllegalStateException("Parent case is null");
+            throw new IllegalArgumentException("Parent case is null");
         }
         Optional<Case> caseOptional = caseRepository.findById(taskDto.getParentCase());
         if(caseOptional.isEmpty()){
-            throw new  IllegalStateException("Parent case not found");
+            throw new NoSuchElementException("Parent case not found");
         }
 
         return new Task(
@@ -130,11 +131,18 @@ public class DAOService {
         );
     }
 
-    public CaseDto saveCase(CaseDto caseDto) {
-        return convertCase(caseRepository.save(convertCaseDto(caseDto)));
+    public CaseDto saveCase(CaseDto caseDto) throws IllegalArgumentException{
+        if(!caseDto.getTasks().isEmpty()) {
+            throw new IllegalArgumentException("New case contains tasks");
+        }
+        try{
+            return convertCase(caseRepository.save(convertCaseDto(caseDto)));
+        }catch (DataIntegrityViolationException e){
+            throw new IllegalArgumentException("Constraint violation", e);
+        }
     }
 
-    public TaskDto saveTask(TaskDto taskDto) throws IllegalStateException{
+    public TaskDto saveTask(TaskDto taskDto) throws NoSuchElementException, IllegalArgumentException {
         Task output = taskRepository.save(convertTaskDto(taskDto));
         Case c = caseRepository.findById(taskDto.getParentCase()).orElseThrow();
         c.addTask(output);
@@ -202,14 +210,27 @@ public class DAOService {
         throw new IllegalArgumentException("Case not found '"+id+"'");
     }
 
-    public TaskDto updateTaskStatus(UUID id, String status) throws IllegalArgumentException {
+    public TaskDto updateTaskProperty(UUID id, String value, String property) throws IllegalArgumentException {
         Optional<Task> taskOptional = taskRepository.findById(id);
         if (taskOptional.isPresent()) {
-            taskOptional.get().setStatus(status);
+            try {
+                switch (property) {
+                    case "status" -> taskOptional.get().setStatus(value);
+                    case "description" -> taskOptional.get().setDescription(value);
+                    case "title" -> taskOptional.get().setTitle(value);
+                    case "dueDate" -> {
+                        LocalDateTime localDate = LocalDateTime.parse(value);
+                        taskOptional.get().setDueDate(localDate);
+                    }
+                    default -> throw new IllegalArgumentException("Cannot find modifiable property '"+property+"'");
+                }
+            }catch(DateTimeParseException e){
+                throw new IllegalArgumentException("Could not parse date '" + value + "'");
+            }
             taskRepository.save(taskOptional.get());
             return convertTask(taskOptional.get());
         }
-        throw new IllegalArgumentException("Task not found '"+id+"'");
+        throw new IllegalArgumentException("Case not found '"+id+"'");
     }
 
     public Page<TaskDto> getTasksForParent(UUID id, Pageable pageable) {

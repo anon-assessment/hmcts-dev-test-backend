@@ -3,16 +3,17 @@ package uk.gov.hmcts.reform.dev.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.reform.dev.dto.TaskDto;
 import uk.gov.hmcts.reform.dev.services.DAOService;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.springframework.http.ResponseEntity.notFound;
-import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.*;
 
 /**
  * Routes for CRUD operations on the Task data
@@ -67,7 +68,13 @@ public class TaskController {
      */
     @PostMapping("/task")
     public ResponseEntity<?> createTask(@RequestBody TaskDto task) {
-        return ok(daoService.saveTask(task));
+        try{
+            return ok(daoService.saveTask(task));
+        }catch (NoSuchElementException e){
+            return badRequest().body("Could not save task, no case with ID "+task.getParentCase());
+        }catch (IllegalArgumentException e){
+            return badRequest().body("Could not save task, no parent task provided");
+        }
     }
 
     /**
@@ -83,29 +90,21 @@ public class TaskController {
     }
 
     /**
-     * Update task with JSON, will be identified by task ID
+     * Endpoint to update individual task property by id
+     * <br>
      *
-     * @param task Task object to update, must contain ID
-     * @return HTTP OK with update task object
+     * @param id UUID of task to update
+     * @param value New value for specified task property
+     * @param property Name of property to update
+     * @return HTTP Ok with updated task DTO, HTTP Bad Request if task doesn't exist with id or could not update
      */
-    @PutMapping("/task")
-    public ResponseEntity<?> updateTask(@RequestBody TaskDto task) {
-        return ok(daoService.saveTask(task));
-    }
-
-    /**
-     * Update task status by ID
-     *
-     * @param id ID of task to update
-     * @param status New status for task
-     * @return HTTP OK with new task or HTTP Not Found if ID not in database
-     */
-    @PostMapping("/task/{id}/status")
-    public ResponseEntity<?> updateTaskStatus(@PathVariable UUID id, @RequestBody String status) {
-        try{
-            return ok(daoService.updateTaskStatus(id, status));
-        }catch (IllegalArgumentException e) {
-            return notFound().build();
+    @PostMapping(value = "/task/{id}/{property}", produces = "application/json")
+    public ResponseEntity<?> updateProperty(@PathVariable UUID id, @PathVariable String property,
+                                            @RequestParam String value) {
+        try {
+            return ok(daoService.updateTaskProperty(id, value, property));
+        }catch (IllegalArgumentException e){
+            return new ResponseEntity<>("Could not update: "+e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
