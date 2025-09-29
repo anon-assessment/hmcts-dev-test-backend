@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.dev.controllers;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,9 +31,26 @@ public class RootController {
             daoService.loadTestData();
             return ok().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            // Handle double press
+            if(e instanceof ConstraintViolationException){
+                return ok().build();
+            }
             return internalServerError().build();
         }
     }
+
+    @PostMapping("/clearTestData")
+    public ResponseEntity<?> clearTestData() {
+        try{
+            daoService.clearTestData();
+            return ok().build();
+        } catch (Exception e) {
+            if(e instanceof ConstraintViolationException){
+                return ok().build();
+            }
+            return internalServerError().build();
+        }
+    }
+
 
 }

@@ -73,7 +73,7 @@ public class TaskController {
         }catch (NoSuchElementException e){
             return badRequest().body("Could not save task, no case with ID "+task.getParentCase());
         }catch (IllegalArgumentException e){
-            return badRequest().body("Could not save task, no parent task provided");
+            return badRequest().body("Could not save task, no parent case provided");
         }
     }
 
@@ -83,8 +83,8 @@ public class TaskController {
      * @param id ID for task to delete
      * @return HTTP OK after deletion
      */
-    @DeleteMapping("/task")
-    public ResponseEntity<?> deleteTask(@RequestParam UUID id) {
+    @DeleteMapping("/task/{id}")
+    public ResponseEntity<?> deleteTask(@PathVariable UUID id) {
         daoService.deleteTask(id);
         return ok().build();
     }

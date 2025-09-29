@@ -41,7 +41,7 @@ public class Task {
 
     private LocalDateTime dueDate;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Case parentCase;
 
 }

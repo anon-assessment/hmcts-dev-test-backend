@@ -5,13 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.dev.models.Case;
 import uk.gov.hmcts.reform.dev.models.Task;
 import uk.gov.hmcts.reform.dev.repositories.CaseRepository;
 import uk.gov.hmcts.reform.dev.repositories.TaskRepository;
+import uk.gov.hmcts.reform.dev.services.DAOService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit test for Task entity
  */
 @DataJpaTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TaskTest {
 
     TaskRepository taskRepository;
@@ -31,10 +36,18 @@ public class TaskTest {
 
     @Test
     public void taskLifecycleTest(){
-        Task t = new Task("title",
-                          "description", "status", LocalDateTime.now(), null);
+        Case c = new Case("rootCase", "title",
+                          "description", "status", LocalDateTime.now());
 
-        assertDoesNotThrow(() -> taskRepository.save(t), "Could not save task");
+        c = caseRepository.save(c);
+
+        Task t = new Task("title",
+                          "description", "status", LocalDateTime.now(), c);
+
+        t = taskRepository.save(t);
+        c.addTask(t);
+
+        caseRepository.save(c);
 
         assertNotNull(t.getId(), "Task id not automatically provided");
 
@@ -50,12 +63,38 @@ public class TaskTest {
 
         assertEquals(t, b.get(), "Fetched differing task after save and update");
 
-        assertDoesNotThrow(() -> taskRepository.deleteById(t.getId()), "Could not delete task by id");
+        taskRepository.deleteById(t.getId());
 
         b = taskRepository.findById(t.getId());
 
         assertFalse(b.isPresent(), "Task found after deletion");
 
+    }
+
+    @Test
+    public void taskCaseLifecycleTest(){
+
+        Case c = new Case("rootCase", "title",
+                          "description", "status", LocalDateTime.now());
+
+        c = caseRepository.save(c);
+
+        Task t = new Task("title",
+                          "description", "status", LocalDateTime.now(), c);
+
+        t = taskRepository.save(t);
+
+        c.addTask(t);
+
+        caseRepository.save(c);
+
+        UUID taskId = t.getId();
+
+        caseRepository.delete(c);
+
+        Optional<Task> b = taskRepository.findById(taskId);
+
+        assertFalse(b.isPresent(), "Task found after deletion of parent case");
     }
 
     @Test

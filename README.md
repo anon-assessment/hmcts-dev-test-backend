@@ -38,4 +38,23 @@ through the `CrudRepository` interface. However, I extended the features support
 include paginated searching. While the functions for this are somewhat inelegant due
 to requiring multiple arguments, and needing a fully formed UUID to search by ID.
 
-I also added a constraint to require that the case number be unique
+I also added a constraint to require that the case number be unique as that seems to
+fit with the publicly available HMCTS interface requirements (e.g.
+[https://casetracker.justice.gov.uk/](https://casetracker.justice.gov.uk/)).
+
+#### Controller Design
+
+The controllers were initially designed directly interacting with the repositories,
+calling the functions directly from within the request handling function. I chose to
+provide the basic CRUD features through the typical HTTP `GET` `POST` and `DELETE`
+requests as creating and updating are both effectively `POST` operations.
+
+As development progressed alongside the frontend, I opted to add search functionality
+for the cases and find-by-case for the tasks. These were to cater to the basic
+requirements of a user to find the case and browse it's attached tasks in pages.
+
+#### Testing Development
+
+My test implementations focus on testing complete routes with Smoke and Integration tests
+for both user-experience simulation and constraint/relationship verification.
+

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.dev.dto.CaseDto;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class RelationshipTest {
 
     @Autowired
@@ -102,7 +104,7 @@ public class RelationshipTest {
     @Test
     public void invalidRelationships(){
         CaseDto caseDto = new CaseDto();
-        caseDto.setCaseNumber("");
+        caseDto.setCaseNumber("CaseNumber");
         caseDto.setTitle("Test Case");
         caseDto.setDescription("This is a test Case");
         caseDto.setStatus("Ongoing");

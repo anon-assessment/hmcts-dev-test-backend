@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import uk.gov.hmcts.reform.dev.models.Case;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,8 @@ public interface CaseRepository extends CrudRepository<Case, UUID> {
                                                                                      Pageable pageable);
 
     Optional<Case> findFirstByCaseNumber(String caseNumber);
+
+    void deleteAllByCaseNumberIn(Set<String> caseNumbers);
 
 
 }

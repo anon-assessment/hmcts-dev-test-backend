@@ -89,8 +89,8 @@ public class CaseController {
      * @param id UUID of the case to be deleted
      * @return HTTP Ok with boolean true (case existed, now deleted) or false (case did not exist)
      */
-    @DeleteMapping(value = "/case", produces = "application/json")
-    public ResponseEntity<?> deleteCase(@RequestParam UUID id) {
+    @DeleteMapping(value = "/case/{id}", produces = "application/json")
+    public ResponseEntity<?> deleteCase(@PathVariable UUID id) {
         daoService.deleteCase(id);
         return ok().build();
     }

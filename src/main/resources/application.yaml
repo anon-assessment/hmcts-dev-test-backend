@@ -34,7 +34,9 @@ spring:
     url: jdbc:h2:file:~/test.db
   hateoas:
     use-hal-as-default-json-media-type: false
-
+  data:
+    jdbc:
+      dialect: h2
 
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
