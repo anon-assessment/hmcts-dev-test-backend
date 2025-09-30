@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.dev.controllers;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +33,7 @@ public class RootController {
             return ok().build();
         } catch (Exception e) {
             // Handle double press
-            if(e instanceof ConstraintViolationException){
+            if(e instanceof ConstraintViolationException || e instanceof DataIntegrityViolationException){
                 return ok().build();
             }
             return internalServerError().build();
@@ -45,9 +46,11 @@ public class RootController {
             daoService.clearTestData();
             return ok().build();
         } catch (Exception e) {
-            if(e instanceof ConstraintViolationException){
+            if(e instanceof ConstraintViolationException || e instanceof DataIntegrityViolationException){
                 return ok().build();
             }
+
+            System.out.println(e.getMessage());
             return internalServerError().build();
         }
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class DAOService {
 
     CaseRepository caseRepository;
@@ -201,15 +203,11 @@ public class DAOService {
      * @return CaseDto post-save transaction
      * @throws IllegalArgumentException If either the CaseDto contains tasks or the caseNumber already exists in the DB
      */
-    public CaseDto saveCase(CaseDto caseDto) throws IllegalArgumentException{
+    public CaseDto saveCase(CaseDto caseDto) throws IllegalArgumentException, DataIntegrityViolationException{
         if(!caseDto.getTasks().isEmpty()) {
             throw new IllegalArgumentException("New case contains tasks");
         }
-        try{
-            return convertCase(caseRepository.save(convertCaseDto(caseDto)));
-        }catch (DataIntegrityViolationException e){
-            throw new IllegalArgumentException("Constraint violation", e);
-        }
+        return convertCase(caseRepository.save(convertCaseDto(caseDto)));
     }
 
     /**
@@ -257,7 +255,8 @@ public class DAOService {
      *          without declaring which it did or didn't save,
      *          TODO: Implement improved version to provide transaction success/fail info
      */
-    public Collection<CaseDto> saveCases(Collection<CaseDto> caseDtos) throws IllegalArgumentException {
+    public Collection<CaseDto> saveCases(Collection<CaseDto> caseDtos) throws IllegalArgumentException,
+        DataIntegrityViolationException {
         return caseDtos.stream().map(this::saveCase).toList();
     }
 

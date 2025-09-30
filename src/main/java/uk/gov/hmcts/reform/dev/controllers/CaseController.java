@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.dev.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,6 @@ import static org.springframework.http.ResponseEntity.*;
 @RestController()
 public class CaseController {
 
-    CaseRepository caseRepository;
-
     private final DAOService daoService;
 
     private final PagedResourcesAssembler<CaseDto> assembler;
@@ -33,9 +32,8 @@ public class CaseController {
     /**
      * Controller constructor, autowires components for operations
      */
-    public CaseController(@Autowired CaseRepository caseRepository, @Autowired DAOService daoService,
+    public CaseController(@Autowired DAOService daoService,
                           @Autowired PagedResourcesAssembler<CaseDto> assembler) {
-        this.caseRepository = caseRepository;
         this.daoService = daoService;
         this.assembler = assembler;
     }
@@ -46,8 +44,8 @@ public class CaseController {
      * @return HTTP Ok with example case data
      */
     @GetMapping(value = "/get-example-case", produces = "application/json")
-    public ResponseEntity<Case> getExampleCase() {
-        return ok(new Case(UUID.fromString("88f3823a-6927-41e8-9f39-a8f93a825630"), "ABC12345", "Case Title",
+    public ResponseEntity<CaseDto> getExampleCase() {
+        return ok(new CaseDto(UUID.fromString("88f3823a-6927-41e8-9f39-a8f93a825630"), "ABC12345", "Case Title",
                            "Case Description", "Case Status", LocalDateTime.now(), List.of()
         ));
     }
@@ -66,7 +64,7 @@ public class CaseController {
 
         try {
             return ok(daoService.saveCase(caseDetails));
-        }catch(IllegalArgumentException e){
+        }catch(IllegalArgumentException | DataIntegrityViolationException e){
             return badRequest().body(e.getMessage());
         }
     }
@@ -102,20 +100,8 @@ public class CaseController {
      * @return HTTP Ok with list of created cases (now with internal ids)
      */
     @PostMapping(value = "/case/list", produces = "application/json")
-    public ResponseEntity<?> getCaseList(@RequestBody List<CaseDto> cases) {
+    public ResponseEntity<?> postCaseList(@RequestBody List<CaseDto> cases) {
         return ok(daoService.saveCases(cases));
-    }
-
-    /**
-     * Endpoint to fetch all cases
-     *
-     * @return HTTP Ok List of cases that currently exist in the database
-     * @deprecated Removing due to no reasonable, scalable use for such functionality
-     */
-    @GetMapping(value = "/case/list", produces = "application/json")
-    @Deprecated(forRemoval = true)
-    public ResponseEntity<?> getAllCases() {
-        return ok(caseRepository.findAll());
     }
 
     /**
@@ -151,7 +137,6 @@ public class CaseController {
     @PostMapping(value = "/case/search")
     public ResponseEntity<?> searchCase(@RequestParam String searchString,
                                         Pageable pageable) {
-
         return ok(assembler.toModel(
             daoService.searchCases(searchString, pageable)
         ));
