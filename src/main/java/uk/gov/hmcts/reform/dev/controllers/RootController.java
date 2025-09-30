@@ -50,7 +50,6 @@ public class RootController {
                 return ok().build();
             }
 
-            System.out.println(e.getMessage());
             return internalServerError().build();
         }
     }
