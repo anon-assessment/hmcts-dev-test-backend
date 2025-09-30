@@ -38,6 +38,11 @@ spring:
     jdbc:
       dialect: h2
 
+  spring:
+    data:
+      rest:
+        detection-strategy: annotated
+
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}${DB_OPTIONS:}
