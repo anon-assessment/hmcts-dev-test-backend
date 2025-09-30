@@ -58,3 +58,8 @@ requirements of a user to find the case and browse it's attached tasks in pages.
 My test implementations focus on testing complete routes with Smoke and Integration tests
 for both user-experience simulation and constraint/relationship verification.
 
+#### Swagger
+
+Swagger UI is available at [http://localhost:4000/swagger-ui/index.html](http://localhost:4000/swagger-ui/index.html)
+when the app is running.
+

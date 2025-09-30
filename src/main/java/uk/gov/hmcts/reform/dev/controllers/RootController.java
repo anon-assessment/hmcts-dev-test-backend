@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.dev.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +29,11 @@ public class RootController {
         return ok("Welcome to test-backend");
     }
 
+    @Operation(summary = "Loads test data into the database")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Either test data already in DB or was loaded successfully"),
+        @ApiResponse(responseCode = "500", description = "Unknown error occurred")
+    })
     @PostMapping("/testData")
     public ResponseEntity<?> testData() {
         try {
@@ -40,6 +48,11 @@ public class RootController {
         }
     }
 
+    @Operation(summary = "Clears test data from the database")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Either test data wasn't in DB or was cleared successfully"),
+        @ApiResponse(responseCode = "500", description = "Unknown error occurred")
+    })
     @PostMapping("/clearTestData")
     public ResponseEntity<?> clearTestData() {
         try{
